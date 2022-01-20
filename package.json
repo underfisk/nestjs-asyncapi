@@ -1,10 +1,29 @@
 {
   "name": "nestjs-asyncapi",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "Async API module for Nestjs",
+  "author": "Rodrigo",
+  "license": "MIT",
+  "main": "dist/index",
+  "types": "dist/index",
+  "engines": {
+    "node": ">= 10.13.0",
+    "npm": ">= 6.11.0"
+  },
+  "contributors": [
+    {
+      "name": "Rodrigo",
+      "author": true
+    },
+    {
+      "name": "Vlad Betsun",
+      "email": "vlad.betcun@gmail.com"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/underfisk/nestjs-asyncapi/issues"
+  },
+  "homepage": "https://github.com/underfisk/nestjs-asyncapi#readme",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
