@@ -1,35 +1,23 @@
 import { Type } from '@nestjs/common'
-import { createMethodDecorator } from './helpers'
+import { createMethodDecorator, createMixedDecorator } from './helpers'
 import { DECORATORS } from '../constants'
-import { MessageSchemaObjectHost } from './async-message.decorator'
 import { AsyncApiOperation } from '../interfaces/async-api-operation.interface'
 import { AsyncApiReferenceObject } from '../interfaces/async-api-reference-object.interface'
 import { AsyncApiSchemaObject } from '../interfaces/async-api-schema-object.interface'
+import { AsyncApiOperationOptions } from '../interfaces/async-operation-options.interface'
 
 export interface MessageOneOf {
   oneOf: (AsyncApiSchemaObject | AsyncApiReferenceObject)[]
 }
 
-export class AsyncConsumerMetadata extends AsyncApiOperation<
-  MessageOneOf | Type
-> {}
-
-export type AsyncConsumerOptions =
-  | AsyncConsumerMetadata
-  | MessageSchemaObjectHost
-
 /**
  *
- * @param name
  * @see https://www.asyncapi.com/docs/specifications/2.0.0#definitionsConsumer
  * @constructor
+ * @param options
  */
 export function AsyncConsumer(
-  channelName: string,
-  options: AsyncConsumerOptions,
+  options: AsyncApiOperationOptions,
 ): MethodDecorator {
-  return createMethodDecorator(DECORATORS.CONSUMER, {
-    options,
-    channelName,
-  })
+  return createMixedDecorator(DECORATORS.SUB, options)
 }

@@ -58,10 +58,12 @@ export class AsyncApiModule {
   ) {
     // Workaround for older versions of the @nestjs/platform-fastify package
     // where "isParserRegistered" getter is not defined.
-    const hasParserGetterDefined = (Object.getPrototypeOf(
-      httpServer,
-      // eslint-disable-next-line @typescript-eslint/ban-types
-    ) as Object).hasOwnProperty('isParserRegistered')
+    const hasParserGetterDefined = (
+      Object.getPrototypeOf(
+        httpServer,
+        // eslint-disable-next-line @typescript-eslint/ban-types
+      ) as Object
+    ).hasOwnProperty('isParserRegistered')
     if (hasParserGetterDefined && !httpServer.isParserRegistered) {
       httpServer.registerParserMiddleware()
     }
@@ -75,10 +77,10 @@ export class AsyncApiModule {
       // res.send(generator.getIndexHtmlPath())
       res.send(html)
     })
-    httpServer.get(finalPath + '-json', (req, res) => {
+    httpServer.get(`${finalPath}-json`, (req, res) => {
       res.send(contract)
     })
-    httpServer.get(finalPath + '-yml', (req, res) => {
+    httpServer.get(`${finalPath}-yml`, (req, res) => {
       res.send(parser.parse(contract))
     })
   }

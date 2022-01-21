@@ -1,6 +1,7 @@
 import { Type } from '@nestjs/common'
-import { createMethodDecorator } from './helpers'
+import { createMethodDecorator, createMixedDecorator } from './helpers'
 import { DECORATORS } from '../constants'
+import { AsyncApiOperationOptions } from '../interfaces/async-operation-options.interface'
 
 export class AsyncBaseMessage {
   description?: string
@@ -16,14 +17,20 @@ export class AsyncConsumerMetadata extends AsyncBaseMessage {}
  * @see https://www.asyncapi.com/docs/specifications/2.0.0#definitionsConsumer
  * @constructor
  */
+/*
 export function AsyncPublisher(
-  channelName: string,
   payload: Type | Type[],
   metadata?: AsyncConsumerMetadata,
 ): MethodDecorator {
   return createMethodDecorator(DECORATORS.PUBLISHER, {
     payload,
-    channelName,
     metadata,
   })
+}
+*/
+
+export function AsyncPublisher(
+  options: AsyncApiOperationOptions,
+): MethodDecorator {
+  return createMixedDecorator(DECORATORS.PUB, options)
 }

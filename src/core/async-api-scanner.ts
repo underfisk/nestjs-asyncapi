@@ -9,10 +9,12 @@ import { stripLastSlash } from '../utils/strip-last-slash'
 import { AsyncApiExplorer } from './async-api-explorer'
 import { AsyncApiScanningOptions } from '../interfaces/async-api-scanning-options.interface'
 import { AsyncApiChannels } from '../interfaces/async-api-channels.interface'
+import { AsyncApiSchemaObject } from '../interfaces/async-api-schema-object.interface'
+import { AsyncApiTransformer } from './async-api-transformer'
 
 /** @author https://github.com/nestjs/swagger/blob/master/lib/swagger-scanner.ts **/
 export class AsyncApiScanner {
-  //private readonly transformer = new AsyncApiTransformer()
+  private readonly transformer = new AsyncApiTransformer()
   /*private readonly schemaObjectFactory = new SchemaObjectFactory(
     new ModelPropertiesAccessor(),
     new SwaggerTypesMapper(),
@@ -36,58 +38,72 @@ export class AsyncApiScanner {
     )
 
     const globalPrefix = stripLastSlash(this.getGlobalPrefix(app))
+    const denormalizedChannels = modules.map(
+      ({ components, metatype, relatedModules }) => {
+        let allComponents = new Map(components)
 
-    modules.forEach(({ routes, metatype, relatedModules }) => {
-      let allRoutes = new Map(routes)
+        if (deepScanRoutes) {
+          // only load submodules routes if asked
+          const isGlobal = (module: Type<any>) =>
+            !container.isGlobalModule(module)
 
-      if (deepScanRoutes) {
-        // only load submodules routes if asked
-        const isGlobal = (module: Type<any>) =>
-          !container.isGlobalModule(module)
+          Array.from(relatedModules.values())
+            .filter(isGlobal as any)
+            .map(({ components: relatedComponents }) => relatedComponents)
+            .forEach((relatedComponents) => {
+              allComponents = new Map([...allComponents, ...relatedComponents])
+            })
+        }
+        const path = metatype
+          ? Reflect.getMetadata(MODULE_PATH, metatype)
+          : undefined
 
-        Array.from(relatedModules.values())
-          .filter(isGlobal as any)
-          .map(({ routes: relatedModuleRoutes }) => relatedModuleRoutes)
-          .forEach((relatedModuleRoutes) => {
-            allRoutes = new Map([...allRoutes, ...relatedModuleRoutes])
-          })
-      }
+        return this.scanModuleComponents(
+          allComponents as Map<string, InstanceWrapper>,
+          path,
+          globalPrefix,
+          operationIdFactory,
+        )
+      },
+    )
 
-      const path = metatype
-        ? Reflect.getMetadata(MODULE_PATH, metatype)
-        : undefined
-
-      return this.scanModuleRoutes(
-        allRoutes,
-        path,
-        globalPrefix,
-        operationIdFactory,
-      )
-    })
-
+    const schemas = this.explorer.getSchemas()
+    //this.addExtraModels(schemas, extraModels);
+    const normalizedChannels = this.transformer.normalizeChannels(
+      flatten(denormalizedChannels as any),
+    )
+    const components = {
+      schemas: reduce(schemas, extend) as Record<string, AsyncApiSchemaObject>,
+    }
     return {
+      ...normalizedChannels,
+      components: components,
+    }
+
+    /* return {
       channels: this.explorer.getChannels(),
       components: {
         messages: this.explorer.getMessages(),
       },
-    }
+    }*/
   }
 
-  public scanModuleRoutes(
-    routes: Map<string, InstanceWrapper>,
+  public scanModuleComponents(
+    components: Map<string, InstanceWrapper>,
     modulePath?: string,
     globalPrefix?: string,
     operationIdFactory?: (controllerKey: string, methodKey: string) => string,
   ): AsyncApiChannels {
-    const componentsRecord = [...routes.values()].map((ctrl) =>
-      this.explorer.exploreController(
-        ctrl,
+    const denormalizedArray = [...components.values()].map((comp) =>
+      this.explorer.exploreChannel(
+        comp,
         modulePath,
         globalPrefix,
         operationIdFactory,
       ),
     )
-    return componentsRecord[0]
+
+    return flatten(denormalizedArray) as any
   }
 
   public getModules(

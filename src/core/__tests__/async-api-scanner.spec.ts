@@ -1,28 +1,30 @@
 import { AsyncApiScanner } from '../async-api-scanner'
 import { Test } from '@nestjs/testing'
-import { Controller, INestApplication } from '@nestjs/common'
+import { Controller, INestApplication, Injectable } from '@nestjs/common'
 import { AsyncConsumer } from '../../decorators/async-consumer.decorator'
-import { AsyncMessage } from '../../decorators/async-message.decorator'
 import { AsyncProperty } from '../../decorators/async-property.decorator'
-import { AsyncPublisher } from '../../decorators/async-publisher.decorator'
-import * as util from 'util'
 import { ContractParser } from '../../services/contract-parser'
 import { createContractBase } from '../../fixtures/contract-fixture'
+import { AsyncChannel } from '../../decorators/async-channel.decorator'
+import { ApiProperty } from '@nestjs/swagger'
+import { AsyncPublisher } from '../../decorators/async-publisher.decorator'
 
 describe('AsyncApiScanner', () => {
   let app: INestApplication
   let scanner: AsyncApiScanner
 
   beforeAll(async () => {
-    @AsyncMessage({})
     class TestMessageDto {
-      @AsyncProperty({ type: String })
+      @ApiProperty({ type: String, description: 'Testing from async' })
       id: string
     }
 
-    @Controller()
+    @Injectable()
+    @AsyncChannel('test')
     class UserController {
-      @AsyncConsumer('test', { message: TestMessageDto })
+      @AsyncConsumer({
+        message: { name: 'hey', payload: { type: TestMessageDto } },
+      })
       handleConsume() {
         return true
       }
@@ -35,7 +37,7 @@ describe('AsyncApiScanner', () => {
       methodThatHasNoDecorators() {}
     }
     const moduleRef = await Test.createTestingModule({
-      controllers: [UserController],
+      providers: [UserController],
     }).compile()
     app = moduleRef.createNestApplication()
     await app.init()
@@ -59,6 +61,7 @@ describe('AsyncApiScanner', () => {
       channels: result.channels,
     }
     //console.log(parser.parse(contract))
+    console.log(result)
     expect(result).toBeDefined()
   })
 })

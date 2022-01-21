@@ -7,24 +7,27 @@ import { DECORATORS } from '../constants'
 import { ConsumerObjectFactory } from '../services/consumer-object-factory'
 import { AsyncApiSchemaObject } from '../interfaces/async-api-schema-object.interface'
 import { AsyncApiChannels } from '../interfaces/async-api-channels.interface'
-import { AsyncApiMessageMetadata } from '../interfaces/async-api-message-metadata.interface'
-import { Logger } from '@nestjs/common'
+import { AsyncApiMessage } from '../interfaces/async-api-message-metadata.interface'
+import { Logger, Type } from '@nestjs/common'
 import { AsyncApiChannel } from '../interfaces/async-api-channel.interface'
+import { DenormalizedDocResolvers } from '../interfaces/doc/denormalized-doc-resolvers.interface'
+import { DenormalizedDoc } from '../interfaces/doc/denormalized-doc.interface'
+import { exploreAsyncApiOperationMetadata } from './exploreAsyncApiOperationMetadata'
 
 export class AsyncApiExplorer {
-  // private readonly mimetypeContentWrapper = new MimetypeContentWrapper()
   private readonly logger = new Logger(AsyncApiExplorer.name)
   private readonly metadataScanner = new MetadataScanner()
-  private readonly schemas: AsyncApiSchemaObject[] = []
-  private messages: Record<string, AsyncApiMessageMetadata> = {}
+  private readonly schemas: Record<string, AsyncApiSchemaObject> = {}
+  private messages: Record<string, AsyncApiMessage> = {}
   private readonly consumerObjectFactory = new ConsumerObjectFactory()
   private operationIdFactory = (controllerKey: string, methodKey: string) =>
     controllerKey ? `${controllerKey}_${methodKey}` : methodKey
 
-  // constructor(private readonly schemaObjectFactory: SchemaObjectFactory) {}
+  private readonly schemaRefsStack: string[] = []
+
   private channels: Record<string, AsyncApiChannel> = {}
 
-  private createDefaultMessageComponent(): AsyncApiMessageMetadata {
+  /* private createDefaultMessageComponent(): AsyncApiMessage {
     return {
       description:
         'Default message, please ensure you add a message component in your producer/consumer decorator',
@@ -32,7 +35,7 @@ export class AsyncApiExplorer {
       name: 'Default message',
       correlationId: '__EMPTY__',
     }
-  }
+  }*/
 
   private createDefaultChannelComponent(): AsyncApiChannel {
     return {
@@ -53,8 +56,12 @@ export class AsyncApiExplorer {
     this.channels = channels
   }
 
-  private setMessages(messages: Record<string, AsyncApiMessageMetadata>) {
+  private setMessages(messages: Record<string, AsyncApiMessage>) {
     this.messages = messages
+  }
+
+  getSchemas() {
+    return this.schemas
   }
 
   getChannels() {
@@ -65,23 +72,54 @@ export class AsyncApiExplorer {
     return this.messages
   }
 
-  public exploreController(
+  public exploreChannel(
     wrapper: InstanceWrapper<Controller>,
     modulePath?: string,
     globalPrefix?: string,
     operationIdFactory?: (controllerKey: string, methodKey: string) => string,
-  ): AsyncApiChannels {
+  ) {
     if (operationIdFactory) {
       this.operationIdFactory = operationIdFactory
     }
     const { instance, metatype } = wrapper
+
+    if (
+      !instance ||
+      !metatype ||
+      !Reflect.getMetadataKeys(metatype).find((x) => x === DECORATORS.CHANNEL)
+    ) {
+      return []
+    }
+
     const prototype = Object.getPrototypeOf(instance)
 
-    const scanResult = this.metadataScanner.scanFromPrototype<any, any>(
+    console.log({
+      instance,
+      metatype,
+      prototype,
+    })
+    const documentResolvers: DenormalizedDocResolvers = {
+      root: [exploreAsyncApiOperationMetadata],
+      security: [],
+      tags: [],
+      operations: [exploreAsyncApiOperationMetadata],
+    }
+    return this.generateDenormalizedDocument(
+      metatype as Type<unknown>,
+      prototype,
+      instance,
+      documentResolvers,
+      modulePath,
+      globalPrefix,
+    )
+
+    /* const scanResult = this.metadataScanner.scanFromPrototype<any, any>(
       instance,
       prototype,
       (name) => {
         const handler = prototype[name]
+        console.log('Handler name -> ' + name)
+        console.log('Typeof the handler -> ' + typeof handler)
         const consumerMetadata = Reflect.getMetadata(
           DECORATORS.CONSUMER,
           handler,
@@ -90,6 +128,11 @@ export class AsyncApiExplorer {
           DECORATORS.PUBLISHER,
           handler,
         )
+
+        console.log({
+          consumerMetadata,
+          publisherMetadata,
+        })
 
         if (isNil(consumerMetadata) && isNil(publisherMetadata)) {
           return
@@ -138,7 +181,7 @@ export class AsyncApiExplorer {
       this.setChannels(channels)
     }
 
-    return prototype
+    return prototype*/
   }
 
   private getOperationId(instance: object, method: Function): string {
@@ -269,5 +312,39 @@ export class AsyncApiExplorer {
     }
 
     return messageComponent
+  }
+
+  private generateDenormalizedDocument(
+    metatype: Type<unknown>,
+    prototype: Type<unknown>,
+    instance: object,
+    documentResolvers: DenormalizedDocResolvers,
+    _modulePath?: string,
+    _globalPrefix?: string,
+  ): DenormalizedDoc[] {
+    const denormalizedChannels = this.metadataScanner.scanFromPrototype<
+      any,
+      DenormalizedDoc
+    >(instance, prototype, (name) => {
+      const targetCallback = prototype[name]
+      const methodMetadata = documentResolvers.root.reduce((_metadata, fn) => {
+        const channelMetadata = fn(metatype)
+        return {
+          root: Object.assign(channelMetadata, { name: channelMetadata.name }),
+          operations: documentResolvers.operations.reduce((_metadata, opFn) => {
+            return opFn(
+              this.schemas,
+              this.schemaRefsStack,
+              instance,
+              prototype,
+              targetCallback,
+            )
+          }, {}),
+        }
+      }, {})
+      return methodMetadata
+    })
+
+    return denormalizedChannels
   }
 }

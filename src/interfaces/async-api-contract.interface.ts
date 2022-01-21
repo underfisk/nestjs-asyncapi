@@ -6,7 +6,7 @@ export interface AsyncApiContract {
   asyncapi: string
   id?: string
   /** @default application/json **/
-  defaultContentType: string
+  defaultContentType?: string
   info: {
     title: string
     version: string
@@ -18,4 +18,6 @@ export interface AsyncApiContract {
   servers?: AsyncApiServers
   components: AsyncApiComponents
   channels: AsyncApiChannels
+  tags?: any[]
+  externalDocs?: any
 }

@@ -1,9 +1,9 @@
 import { AsyncApiOperation } from '../interfaces/async-api-operation.interface'
-import { AsyncConsumerOptions } from '../decorators/async-consumer.decorator'
+import { AsyncApiOperationOptions } from '../interfaces/async-operation-options.interface'
 
 export class ConsumerObjectFactory {
   create(
-    options: AsyncConsumerOptions,
+    options: AsyncApiOperationOptions,
     operationId: string,
   ): AsyncApiOperation {
     /** @todo Handle first if the metadata is a SchemaObject or a message type **/

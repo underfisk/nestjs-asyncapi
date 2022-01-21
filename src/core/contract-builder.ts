@@ -9,7 +9,7 @@ import { SecuritySchemeIn } from '../types/security-scheme-in.type'
 import validator from 'validator'
 
 /**
- * ContractBuilder helps creating a new "contract/document" beetween nestjs applications and AsyncAPI
+ * ContractBuilder helps to create a new "contract/document" between nestjs applications and AsyncAPI
  * @see https://www.asyncapi.com/docs/getting-started/asyncapi-documents
  */
 export class ContractBuilder {

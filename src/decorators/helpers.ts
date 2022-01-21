@@ -4,11 +4,31 @@ import { DECORATORS, METADATA_FACTORY_NAME } from '../constants'
  * @see https://github.com/nestjs/swagger/blob/master/lib/decorators/helpers.ts
  */
 
+export function createMixedDecorator<T = any>(
+  metakey: string,
+  metadata: T,
+): MethodDecorator & ClassDecorator {
+  return (
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    target: object,
+    key?: string | symbol,
+    descriptor?: TypedPropertyDescriptor<any>,
+  ): any => {
+    if (descriptor) {
+      Reflect.defineMetadata(metakey, metadata, descriptor.value)
+      return descriptor
+    }
+    Reflect.defineMetadata(metakey, metadata, target)
+    return target
+  }
+}
+
 export function createMethodDecorator<T = any>(
   metakey: string,
   metadata: T,
 ): MethodDecorator {
   return (
+    // eslint-disable-next-line @typescript-eslint/ban-types
     target: object,
     key: string | symbol,
     descriptor: PropertyDescriptor,
