@@ -11,8 +11,8 @@ export interface AsyncChannelOptions {
 /**
  * Decorates a model property to be included in async api documentation
  * (If the property is not decorated, it will not be included)
- * @param metadata
  * @constructor
+ * @param optionsOrName
  */
 export function AsyncChannel(optionsOrName: string | AsyncChannelOptions) {
   const metadata =

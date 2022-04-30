@@ -27,7 +27,7 @@ describe('AsyncApiGenerator', () => {
           { OAuth2: ['app:write', 'app:read'] },
         ],
       })
-      .setLicense('MIT', 'https://google.pt')
+      .setLicense('MIT', 'https://mywebsite.com')
       .build()
 
     /** @todo Remove this and messages, will be replaced with reflection **/
