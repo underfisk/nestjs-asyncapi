@@ -1,10 +1,10 @@
 import { ContractParser } from '../contract-parser'
-import { ContractBuilder } from '../../core/contract-builder'
+import { DocumentBuilder } from '../../core/document-builder'
 
 describe('ContractParser', () => {
   const parser = new ContractParser()
   it('should parse custom contract to yaml', () => {
-    const contract = new ContractBuilder()
+    const contract = new DocumentBuilder()
       .setTitle('Test Parse')
       .setDescription('test')
       .setVersion('1.0.0')

@@ -9,41 +9,41 @@ import { SecuritySchemeIn } from '../types/security-scheme-in.type'
 import validator from 'validator'
 
 /**
- * ContractBuilder helps to create a new "contract/document" between nestjs applications and AsyncAPI
+ * DocumentBuilder helps to create a new "contract/document" between nestjs applications and AsyncAPI
  * @see https://www.asyncapi.com/docs/getting-started/asyncapi-documents
  */
-export class ContractBuilder {
-  private readonly logger = new Logger(ContractBuilder.name)
+export class DocumentBuilder {
+  private readonly logger = new Logger(DocumentBuilder.name)
   private readonly contract = createContractBase()
 
-  public setTitle(title: string): ContractBuilder {
+  public setTitle(title: string): DocumentBuilder {
     this.contract.info.title = title
     return this
   }
 
-  public setId(id: string): ContractBuilder {
+  public setId(id: string): DocumentBuilder {
     this.contract.id = id
     return this
   }
 
-  public setDescription(description: string): ContractBuilder {
+  public setDescription(description: string): DocumentBuilder {
     this.contract.info.description = description
     return this
   }
 
-  public setVersion(version: string): ContractBuilder {
+  public setVersion(version: string): DocumentBuilder {
     this.contract.info.version = version
     return this
   }
 
-  public setTermsOfService(url: string): ContractBuilder {
+  public setTermsOfService(url: string): DocumentBuilder {
     if (!validator.isURL(url)) {
       throw new Error(`${url} is not a valid URL`)
     }
     this.contract.info.termsOfService = url
     return this
   }
-  public setLicense(name: string, url: string): ContractBuilder {
+  public setLicense(name: string, url: string): DocumentBuilder {
     if (!validator.isURL(url)) {
       throw new Error(`${url} is not a valid URL`)
     }
@@ -51,12 +51,12 @@ export class ContractBuilder {
     return this
   }
 
-  public setDefaultContentType(contentType: string): ContractBuilder {
+  public setDefaultContentType(contentType: string): DocumentBuilder {
     this.contract.defaultContentType = contentType
     return this
   }
 
-  public setContact(name: string, email: string, url: string): ContractBuilder {
+  public setContact(name: string, email: string, url: string): DocumentBuilder {
     if (!validator.isURL(url)) {
       throw new Error(`${url} is not a valid URL`)
     }
@@ -77,7 +77,7 @@ export class ContractBuilder {
   public addServer(
     nameOrEnvironment: string,
     options: ApiServerOptions,
-  ): ContractBuilder {
+  ): DocumentBuilder {
     if (!this.contract.servers) {
       this.contract.servers = {}
     }
@@ -89,7 +89,7 @@ export class ContractBuilder {
   public addSecurityScheme(
     name: string,
     scheme: SecurityScheme,
-  ): ContractBuilder {
+  ): DocumentBuilder {
     if (!this.contract.components.securitySchemes) {
       this.contract.components.securitySchemes = {}
     }
@@ -101,7 +101,7 @@ export class ContractBuilder {
   public addUserPasswordSecurityScheme(
     name = 'userPassword',
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.UserPassword,
       description,
@@ -112,7 +112,7 @@ export class ContractBuilder {
     name: string,
     $in: SecuritySchemeIn,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.ApiKey,
       in: $in,
@@ -123,7 +123,7 @@ export class ContractBuilder {
   public addX509SecurityScheme(
     name: string,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.X509,
       description,
@@ -133,7 +133,7 @@ export class ContractBuilder {
   public addSymmetricEncryptionSecurityScheme(
     name: string,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.SymmetricEncryption,
       description,
@@ -151,7 +151,7 @@ export class ContractBuilder {
     name: string,
     scheme: string,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.Http,
       scheme,
@@ -164,7 +164,7 @@ export class ContractBuilder {
     $in: SecuritySchemeIn,
     keyName: string,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.HttpApiKey,
       name: keyName,
@@ -175,7 +175,7 @@ export class ContractBuilder {
   public addJWTBearerSecurityScheme(
     name: string,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.Http,
       scheme: 'bearer',
@@ -188,7 +188,7 @@ export class ContractBuilder {
     name: string,
     flows: AsyncApiOAuth2Flow,
     description = '',
-  ): ContractBuilder {
+  ): DocumentBuilder {
     return this.addSecurityScheme(name, {
       type: AsyncApiSecurityType.OAuth2,
       flows,

@@ -1,10 +1,10 @@
-import { ContractBuilder } from '../../core/contract-builder'
+import { DocumentBuilder } from '../../core/document-builder'
 import { AsyncApiGenerator } from '../async-api-generator'
 
 describe('AsyncApiGenerator', () => {
   const generator = new AsyncApiGenerator()
   it('should generate the documentation files', async () => {
-    const contract = new ContractBuilder()
+    const contract = new DocumentBuilder()
       .setTitle('Jest app')
       .setDescription('Test app')
       .setVersion('1.0.0')

@@ -4,12 +4,12 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify'
 import { ApplicationModule } from './fastify-app/app.module'
-import { ContractBuilder } from '../src/core/contract-builder'
+import { DocumentBuilder } from '../src/core/document-builder'
 import { AsyncApiModule } from '../src/async-api-module'
 
 describe('Fastify Adapter', () => {
   let app: NestFastifyApplication
-  let builder: ContractBuilder
+  let builder: DocumentBuilder
 
   beforeEach(async () => {
     app = await NestFactory.create<NestFastifyApplication>(
@@ -18,7 +18,7 @@ describe('Fastify Adapter', () => {
       { logger: false },
     )
 
-    builder = new ContractBuilder()
+    builder = new DocumentBuilder()
       .setTitle('Users example at Swagger')
       .setDescription('The cats API description')
       .setVersion('1.0')
