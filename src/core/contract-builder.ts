@@ -71,6 +71,7 @@ export class ContractBuilder {
    * Binds a new server into our servers dictionary. If the name is specified twice
    * it will override the pre-existing one
    * @see https://www.asyncapi.com/docs/getting-started/servers
+   * @param nameOrEnvironment
    * @param options
    */
   public addServer(
